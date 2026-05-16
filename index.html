@@ -1,208 +1,32 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<title>BOM Inspector PRO</title>
+async function login(){
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+ const username=document.getElementById("username").value
+ const password=document.getElementById("password").value
 
-<style>
+ const res = await fetch("http://localhost:3000/api/auth/login",{
 
-body{
-font-family:Segoe UI;
-background:#eef2f7;
-margin:0;
-}
+   method:"POST",
+   headers:{
+     "Content-Type":"application/json"
+   },
 
-header{
-background:#1a3a5c;
-color:white;
-padding:15px;
-font-size:20px;
-}
+   body:JSON.stringify({
+     username,
+     password
+   })
 
-.container{
-padding:20px;
-}
+ })
 
-.card{
-background:white;
-padding:20px;
-margin-bottom:20px;
-border-radius:10px;
-box-shadow:0 4px 15px rgba(0,0,0,0.1);
-}
+ const data = await res.json()
 
-input{
-padding:10px;
-font-size:16px;
-}
+ if(data.token){
 
-button{
-padding:10px 15px;
-background:#1a3a5c;
-border:none;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
+   localStorage.setItem("token",data.token)
 
-table{
-width:100%;
-border-collapse:collapse;
-}
+   enterSystem()
 
-th,td{
-padding:10px;
-border-bottom:1px solid #ddd;
-}
-
-.ok{color:green;font-weight:bold;}
-.miss{color:red;font-weight:bold;}
-.over{color:orange;font-weight:bold;}
-
-</style>
-</head>
-
-<body>
-
-<header>BOM Inspector PRO</header>
-
-<div class="container">
-
-<div class="card">
-
-<h3>Upload BOM</h3>
-<input type="file" id="file">
-
-</div>
-
-<div class="card">
-
-<h3>Scan Part</h3>
-<input id="scan" placeholder="Scan Barcode แล้วกด Enter">
-
-</div>
-
-<div class="card">
-
-<h3>BOM Status</h3>
-
-<table id="table">
-
-<thead>
-<tr>
-<th>Part No</th>
-<th>Required</th>
-<th>Scanned</th>
-<th>Status</th>
-</tr>
-</thead>
-
-<tbody></tbody>
-
-</table>
-
-</div>
-
-</div>
-
-<script>
-
-let bom={}
-
-document.getElementById("file").addEventListener("change", e=>{
-
-let reader=new FileReader()
-
-reader.onload=ev=>{
-
-let data=new Uint8Array(ev.target.result)
-let wb=XLSX.read(data,{type:'array'})
-let sheet=wb.Sheets[wb.SheetNames[0]]
-let rows=XLSX.utils.sheet_to_json(sheet)
-
-rows.forEach(r=>{
-
-bom[r.PartNo]={
-req:r.Qty,
-scan:0
-}
-
-})
-
-render()
+ }else{
+   alert("Login failed")
+ }
 
 }
-
-reader.readAsArrayBuffer(e.target.files[0])
-
-})
-
-document.getElementById("scan").addEventListener("keypress",e=>{
-
-if(e.key==="Enter"){
-
-let code=e.target.value.trim()
-
-if(bom[code]){
-
-bom[code].scan++
-
-}else{
-
-alert("Unknown Part "+code)
-
-}
-
-render()
-
-e.target.value=""
-
-}
-
-})
-
-function render(){
-
-let tbody=document.querySelector("#table tbody")
-tbody.innerHTML=""
-
-Object.keys(bom).forEach(p=>{
-
-let r=bom[p]
-
-let status="OK"
-let cls="ok"
-
-if(r.scan<r.req){
-
-status="Missing"
-cls="miss"
-
-}
-
-if(r.scan>r.req){
-
-status="Over"
-cls="over"
-
-}
-
-tbody.innerHTML+=`
-<tr>
-<td>${p}</td>
-<td>${r.req}</td>
-<td>${r.scan}</td>
-<td class="${cls}">${status}</td>
-</tr>
-`
-
-})
-
-}
-
-</script>
-
-</body>
-</html>
