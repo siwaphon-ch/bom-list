@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>BOM Inspector</title>
+<title>BOM Inspector PRO</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -10,71 +10,77 @@
 
 body{
 font-family:Segoe UI;
-background:#f2f5f9;
-padding:20px;
+background:#eef2f7;
+margin:0;
 }
 
-h1{
-color:#1a3a5c;
+header{
+background:#1a3a5c;
+color:white;
+padding:15px;
+font-size:20px;
+}
+
+.container{
+padding:20px;
 }
 
 .card{
 background:white;
 padding:20px;
-border-radius:10px;
-box-shadow:0 5px 15px rgba(0,0,0,0.1);
 margin-bottom:20px;
+border-radius:10px;
+box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+
+input{
+padding:10px;
+font-size:16px;
 }
 
 button{
 padding:10px 15px;
-border:none;
 background:#1a3a5c;
+border:none;
 color:white;
 border-radius:6px;
 cursor:pointer;
 }
 
-input{
-padding:10px;
-width:250px;
-}
-
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:15px;
 }
 
 th,td{
-padding:8px;
+padding:10px;
 border-bottom:1px solid #ddd;
-text-align:left;
 }
 
 .ok{color:green;font-weight:bold;}
-.missing{color:red;font-weight:bold;}
+.miss{color:red;font-weight:bold;}
+.over{color:orange;font-weight:bold;}
 
 </style>
 </head>
 
 <body>
 
-<h1>BOM Inspector</h1>
+<header>BOM Inspector PRO</header>
+
+<div class="container">
 
 <div class="card">
 
-<h3>Upload BOM Excel</h3>
-
-<input type="file" id="bomFile">
+<h3>Upload BOM</h3>
+<input type="file" id="file">
 
 </div>
 
 <div class="card">
 
 <h3>Scan Part</h3>
-
-<input id="scanInput" placeholder="Scan Barcode แล้วกด Enter">
+<input id="scan" placeholder="Scan Barcode แล้วกด Enter">
 
 </div>
 
@@ -82,7 +88,7 @@ text-align:left;
 
 <h3>BOM Status</h3>
 
-<table id="bomTable">
+<table id="table">
 
 <thead>
 <tr>
@@ -99,27 +105,30 @@ text-align:left;
 
 </div>
 
+</div>
+
 <script>
 
-let bom = {}
+let bom={}
 
-document.getElementById("bomFile").addEventListener("change", function(e){
+document.getElementById("file").addEventListener("change", e=>{
 
-let reader = new FileReader()
+let reader=new FileReader()
 
-reader.onload = function(e){
+reader.onload=ev=>{
 
-let data = new Uint8Array(e.target.result)
-let workbook = XLSX.read(data, {type:'array'})
-let sheet = workbook.Sheets[workbook.SheetNames[0]]
+let data=new Uint8Array(ev.target.result)
+let wb=XLSX.read(data,{type:'array'})
+let sheet=wb.Sheets[wb.SheetNames[0]]
+let rows=XLSX.utils.sheet_to_json(sheet)
 
-let json = XLSX.utils.sheet_to_json(sheet)
+rows.forEach(r=>{
 
-json.forEach(r=>{
-bom[r.PartNo] = {
-qty:r.Qty,
+bom[r.PartNo]={
+req:r.Qty,
 scan:0
 }
+
 })
 
 render()
@@ -130,11 +139,11 @@ reader.readAsArrayBuffer(e.target.files[0])
 
 })
 
-document.getElementById("scanInput").addEventListener("keypress", function(e){
+document.getElementById("scan").addEventListener("keypress",e=>{
 
 if(e.key==="Enter"){
 
-let code=this.value.trim()
+let code=e.target.value.trim()
 
 if(bom[code]){
 
@@ -142,13 +151,13 @@ bom[code].scan++
 
 }else{
 
-alert("Unknown Part : "+code)
+alert("Unknown Part "+code)
 
 }
 
-this.value=""
-
 render()
+
+e.target.value=""
 
 }
 
@@ -156,27 +165,40 @@ render()
 
 function render(){
 
-let tbody=document.querySelector("#bomTable tbody")
+let tbody=document.querySelector("#table tbody")
 tbody.innerHTML=""
 
-for(let part in bom){
+Object.keys(bom).forEach(p=>{
 
-let row=bom[part]
+let r=bom[p]
 
-let status = row.scan>=row.qty ? "OK":"Missing"
+let status="OK"
+let cls="ok"
 
-let tr=document.createElement("tr")
+if(r.scan<r.req){
 
-tr.innerHTML=`
-<td>${part}</td>
-<td>${row.qty}</td>
-<td>${row.scan}</td>
-<td class="${status==="OK"?"ok":"missing"}">${status}</td>
-`
-
-tbody.appendChild(tr)
+status="Missing"
+cls="miss"
 
 }
+
+if(r.scan>r.req){
+
+status="Over"
+cls="over"
+
+}
+
+tbody.innerHTML+=`
+<tr>
+<td>${p}</td>
+<td>${r.req}</td>
+<td>${r.scan}</td>
+<td class="${cls}">${status}</td>
+</tr>
+`
+
+})
 
 }
 
