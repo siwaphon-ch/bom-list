@@ -2,872 +2,185 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>BOM Inspector — JCSTH</title>
-<meta name="application-name" content="BOM Inspector">
-<meta name="description" content="ระบบตรวจเช็ควัสดุ COL ASSY-STRG — JTEKT Column Systems Thailand">
-<meta name="theme-color" content="#1a3a5c">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="BOM Inspector">
+<title>BOM Inspector</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <style>
-  :root {
-    --primary:#1a3a5c;--primary-light:#2563a8;--accent:#e8a020;--accent-light:#fbbf24;
-    --bg:#f0f4f8;--surface:#ffffff;--surface2:#f8fafc;--border:#dde3ea;
-    --text:#1e293b;--text2:#64748b;--text3:#94a3b8;
-    --green:#16a34a;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;
-    --admin:#7c2d12;--admin-light:#ea580c;--admin-bg:#fff7ed;--admin-border:#fed7aa;
-    --shadow:0 2px 12px rgba(0,0,0,0.08);--shadow-lg:0 8px 30px rgba(0,0,0,0.14);
-    --radius:10px;--radius-lg:16px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Segoe UI','Noto Sans Thai',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-  #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f2744 0%,#1a4a8a 50%,#2563a8 100%);}
-  .auth-card{background:var(--surface);border-radius:var(--radius-lg);padding:44px 38px;width:420px;max-width:95vw;box-shadow:var(--shadow-lg);text-align:center;}
-  .auth-logo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;}
-  .auth-logo-icon{width:52px;height:52px;border-radius:14px;background:var(--primary);display:flex;align-items:center;justify-content:center;}
-  .auth-logo-icon svg{width:28px;height:28px;fill:white;}
-  .auth-logo-text{text-align:left;}
-  .auth-logo-text h1{font-size:20px;font-weight:700;color:var(--primary);}
-  .auth-logo-text p{font-size:12px;color:var(--text2);}
-  .auth-divider{border:none;border-top:1px solid var(--border);margin:24px 0;}
-  .auth-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:5px;}
-  .auth-sub{font-size:13px;color:var(--text2);margin-bottom:24px;}
-  .auth-input-group{text-align:left;margin-bottom:14px;}
-  .auth-input-group label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:5px;}
-  .auth-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);background:var(--surface2);outline:none;transition:border .2s;}
-  .auth-input:focus{border-color:var(--primary-light);}
-  .btn-google{width:100%;padding:12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:14px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .2s,border .2s;margin-bottom:10px;}
-  .btn-google:hover{background:var(--bg);border-color:var(--primary-light);}
-  .btn-google svg{width:20px;height:20px;flex-shrink:0;}
-  .btn-login{width:100%;padding:13px;border-radius:8px;border:none;background:var(--primary);color:white;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;margin-top:4px;}
-  .btn-login:hover{background:var(--primary-light);}
-  .auth-or{display:flex;align-items:center;gap:10px;color:var(--text3);font-size:12px;margin:14px 0;}
-  .auth-or::before,.auth-or::after{content:'';flex:1;border-top:1px solid var(--border);}
-  .auth-error{color:var(--red);font-size:13px;margin-top:10px;display:none;padding:8px 12px;background:var(--red-bg);border-radius:6px;}
-  .admin-hint{font-size:11px;color:var(--text3);margin-top:10px;padding:8px;background:var(--surface2);border-radius:6px;border:1px solid var(--border);}
-  .google-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;}
-  .google-modal.show{display:flex;}
-  .google-modal-card{background:white;border-radius:20px;width:380px;max-width:94vw;overflow:hidden;box-shadow:var(--shadow-lg);}
-  .google-modal-header{background:#4285f4;padding:28px;text-align:center;}
-  .google-modal-header h3{color:white;font-size:18px;margin-top:10px;}
-  .google-modal-header p{color:rgba(255,255,255,.8);font-size:13px;}
-  .google-modal-body{padding:24px;}
-  .gmail-option{padding:14px 16px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:12px;transition:border-color .2s;}
-  .gmail-option:hover{border-color:#4285f4;}
-  .gmail-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:white;flex-shrink:0;}
-  .btn-cancel-google{width:100%;padding:12px;background:#f1f5f9;color:#475569;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;}
+body{
+font-family:Segoe UI;
+background:#f2f5f9;
+padding:20px;
+}
 
-  #app-screen{display:none;}
-  .topbar{background:var(--primary);color:white;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:background .3s;}
-  .topbar.admin-mode{background:linear-gradient(90deg,#7c2d12 0%,#b45309 100%);}
-  .topbar-left{display:flex;align-items:center;gap:12px;}
-  .topbar-logo{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;}
-  .topbar-logo svg{width:20px;height:20px;fill:white;}
-  .topbar-title{font-size:16px;font-weight:700;letter-spacing:.3px;}
-  .topbar-sub{font-size:11px;color:rgba(255,255,255,.6);}
-  .topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-  .admin-badge{background:#ea580c;color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.5px;}
-  .user-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border-radius:20px;padding:5px 12px 5px 5px;}
-  .user-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--primary);background:var(--accent-light);}
-  .user-name{font-size:13px;font-weight:500;}
-  .btn-nav{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer;transition:background .2s;}
-  .btn-nav:hover{background:rgba(255,255,255,.22);}
-  .btn-nav.active{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.5);font-weight:600;}
-  /* save indicator */
-  .save-chip{font-size:11px;background:rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;transition:background .3s,color .3s;}
-  .save-chip.saved{background:#16a34a;color:white;}
+h1{
+color:#1a3a5c;
+}
 
-  .container{max-width:1400px;margin:0 auto;padding:24px 20px;}
-  .page-header{margin-bottom:22px;}
-  .page-header h2{font-size:22px;font-weight:700;color:var(--primary);}
-  .page-header p{font-size:14px;color:var(--text2);margin-top:4px;}
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+margin-bottom:20px;
+}
 
-  .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
-  .stat-card{background:var(--surface);border-radius:var(--radius);padding:16px 18px;border:1px solid var(--border);box-shadow:var(--shadow);}
-  .stat-label{font-size:12px;color:var(--text2);font-weight:500;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
-  .stat-value{font-size:26px;font-weight:700;color:var(--primary);}
-  .stat-value.green{color:var(--green);}
-  .stat-value.amber{color:#d97706;}
+button{
+padding:10px 15px;
+border:none;
+background:#1a3a5c;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
 
-  .toolbar{background:var(--surface);border-radius:var(--radius);padding:14px 18px;border:1px solid var(--border);margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-  .search-wrap{position:relative;flex:1;min-width:220px;}
-  .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text3);}
-  .search-input{width:100%;padding:9px 12px 9px 36px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);background:var(--surface2);outline:none;transition:border .2s;}
-  .search-input:focus{border-color:var(--primary-light);}
-  .filter-select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:var(--surface2);outline:none;cursor:pointer;}
-  .btn-primary{padding:9px 18px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .2s;}
-  .btn-primary:hover{background:var(--primary-light);}
-  .btn-primary svg,.btn-green svg{width:16px;height:16px;}
-  .btn-green{padding:9px 16px;background:var(--green);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;}
-  .btn-green:hover{background:#15803d;}
-  .btn-danger-soft{padding:9px 16px;background:var(--red-bg);color:var(--red);border:1.5px solid #fca5a5;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;}
+input{
+padding:10px;
+width:250px;
+}
 
-  .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
-  .item-card{background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:box-shadow .2s,transform .15s;}
-  .item-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);}
-  .item-card-img{height:140px;background:var(--surface2);display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid var(--border);}
-  .item-card-img svg.part-icon{width:64px;height:64px;color:#c0ccd8;}
-  .item-level-badge{position:absolute;top:10px;left:10px;color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;font-family:monospace;}
-  .item-no-badge{position:absolute;top:10px;right:10px;background:var(--accent);color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;}
-  .admin-edit-btn{position:absolute;bottom:8px;right:8px;background:rgba(124,45,18,.9);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;backdrop-filter:blur(4px);}
-  .admin-edit-btn:hover{background:var(--admin-light);}
-  .admin-edit-btn svg{width:11px;height:11px;}
-  .item-card-body{padding:14px 16px;}
-  .item-part-num{font-size:12px;font-weight:700;color:var(--primary-light);font-family:monospace;margin-bottom:6px;line-height:1.4;}
-  .item-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.4;}
-  .item-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-  .meta-chip{font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
-  .meta-chip.site{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
-  .meta-chip.spec{background:#fefce8;color:#854d0e;border-color:#fde68a;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .item-qty-row{display:flex;align-items:center;gap:10px;padding-top:12px;border-top:1px solid var(--border);}
-  .qty-label{font-size:12px;color:var(--text2);flex:1;font-weight:500;}
-  .qty-std{font-size:11px;color:var(--text3);}
-  .qty-ctrl{display:flex;align-items:center;gap:6px;}
-  .qty-btn{width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600;transition:background .15s;}
-  .qty-btn:hover{background:var(--primary);border-color:var(--primary);color:white;}
-  .qty-input{width:60px;height:32px;border:1.5px solid var(--border);border-radius:6px;text-align:center;font-size:15px;font-weight:700;color:var(--primary);background:var(--surface2);outline:none;}
-  .qty-input:focus{border-color:var(--primary-light);}
-  .check-btn{width:32px;height:32px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-  .check-btn.checked{background:var(--green-bg);border-color:var(--green);}
-  .check-btn svg{width:16px;height:16px;color:var(--text3);}
-  .check-btn.checked svg{color:var(--green);}
-  .no-results{grid-column:1/-1;text-align:center;padding:60px;color:var(--text2);font-size:15px;}
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
 
-  #admin-screen{display:none;}
-  .admin-banner{background:linear-gradient(135deg,#7c2d12,#b45309);color:white;padding:26px 32px;border-radius:var(--radius-lg);margin-bottom:22px;display:flex;align-items:center;gap:20px;}
-  .admin-banner-icon{width:52px;height:52px;border-radius:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:26px;}
-  .admin-banner h2{font-size:20px;font-weight:700;margin-bottom:4px;}
-  .admin-banner p{font-size:13px;opacity:.8;}
-  .admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
-  .admin-stat{background:var(--surface);border:1px solid var(--admin-border);border-radius:var(--radius);padding:16px;text-align:center;}
-  .admin-stat .v{font-size:28px;font-weight:700;color:var(--admin);}
-  .admin-stat .l{font-size:12px;color:var(--text2);margin-top:2px;}
-  .admin-toolbar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-  .admin-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);}
-  .admin-table{width:100%;border-collapse:collapse;font-size:13px;}
-  .admin-table thead{background:#f8f4f0;}
-  .admin-table th{padding:12px 14px;text-align:left;font-weight:600;color:var(--admin);font-size:12px;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid var(--admin-border);}
-  .admin-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
-  .admin-table tr:last-child td{border-bottom:none;}
-  .admin-table tr:hover td{background:#fffbf7;}
-  .level-pill{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;font-family:monospace;color:white;}
-  .tbl-part{font-family:monospace;font-size:12px;color:var(--primary-light);font-weight:600;}
-  .btn-edit-row{padding:5px 12px;background:var(--admin-bg);color:var(--admin);border:1px solid var(--admin-border);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;}
-  .btn-edit-row:hover{background:#fed7aa;}
-  .btn-del-row{padding:5px 10px;background:var(--red-bg);color:var(--red);border:1px solid #fca5a5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;margin-left:6px;}
-  .btn-del-row:hover{background:#fee2e2;}
+th,td{
+padding:8px;
+border-bottom:1px solid #ddd;
+text-align:left;
+}
 
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px;}
-  .modal-overlay.show{display:flex;}
-  .modal-card{background:var(--surface);border-radius:var(--radius-lg);width:560px;max-width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
-  .modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--admin-border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#fff7ed,#ffffff);}
-  .modal-header h3{font-size:17px;font-weight:700;color:var(--admin);}
-  .modal-close{width:30px;height:30px;border:none;background:var(--surface2);border-radius:6px;cursor:pointer;font-size:18px;color:var(--text2);display:flex;align-items:center;justify-content:center;}
-  .modal-body{padding:24px;}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
-  .form-row.full{grid-template-columns:1fr;}
-  .form-group{display:flex;flex-direction:column;gap:6px;}
-  .form-group label{font-size:13px;font-weight:600;color:var(--text2);}
-  .form-group label .req{color:var(--red);}
-  .form-input,.form-select,.form-textarea{padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);background:var(--surface2);outline:none;font-family:inherit;transition:border .2s;}
-  .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--admin-light);background:white;}
-  .form-textarea{resize:vertical;min-height:72px;}
-  .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:#fafafa;}
-  .btn-save{padding:10px 26px;background:var(--admin);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;}
-  .btn-save:hover{background:var(--admin-light);}
-  .btn-cancel-modal{padding:10px 20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:14px;cursor:pointer;}
+.ok{color:green;font-weight:bold;}
+.missing{color:red;font-weight:bold;}
 
-  .toast{position:fixed;bottom:24px;right:24px;color:white;padding:13px 22px;border-radius:8px;font-size:14px;font-weight:500;box-shadow:var(--shadow-lg);z-index:999;transform:translateY(60px);opacity:0;transition:transform .3s,opacity .3s;}
-  .toast.show{transform:translateY(0);opacity:1;}
-  .toast.normal{background:var(--primary);}
-  .toast.admin{background:var(--admin);}
-  .toast.success{background:var(--green);}
-
-  /* loading overlay */
-  #loading-overlay{position:fixed;inset:0;background:rgba(15,39,68,.85);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:white;}
-  #loading-overlay.hidden{display:none;}
-  .spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg);}}
-
-  #offline-bar{display:none;background:#dc2626;color:white;text-align:center;font-size:12px;font-weight:600;padding:7px;position:sticky;top:60px;z-index:99;}
-  #offline-bar.show{display:block;}
-
-  #mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface);border-top:1px solid var(--border);padding:6px 0 calc(6px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(3,1fr);box-shadow:0 -2px 12px rgba(0,0,0,.1);}
-  @media(max-width:700px){#mobile-nav.active{display:grid;} .container{padding-bottom:88px;}}
-  .mnav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;position:relative;}
-  .mnav-btn.on{color:var(--primary);}
-  .mnav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;}
-  .mnav-pip{position:absolute;top:3px;right:18px;width:7px;height:7px;background:var(--accent);border-radius:50%;display:none;}
-  .mnav-pip.show{display:block;}
-
-  @media(max-width:700px){
-    .stats-bar,.admin-stats{grid-template-columns:repeat(2,1fr);}
-    .items-grid{grid-template-columns:1fr;}
-    .form-row{grid-template-columns:1fr;}
-    .topbar-sub{display:none;}
-    .admin-table th:nth-child(5),.admin-table td:nth-child(5),
-    .admin-table th:nth-child(6),.admin-table td:nth-child(6){display:none;}
-    .toolbar{flex-wrap:wrap;}
-  }
-  .topbar{padding-top:env(safe-area-inset-top,0px);padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));}
-  body{padding-bottom:env(safe-area-inset-bottom,0px);}
 </style>
 </head>
+
 <body>
 
-<!-- Loading -->
-<div id="loading-overlay">
-  <div class="spinner"></div>
-  <div style="font-size:14px;opacity:.8">กำลังโหลดข้อมูล...</div>
+<h1>BOM Inspector</h1>
+
+<div class="card">
+
+<h3>Upload BOM Excel</h3>
+
+<input type="file" id="bomFile">
+
 </div>
 
-<!-- AUTH -->
-<div id="auth-screen" style="display:none">
-  <div class="auth-card">
-    <div class="auth-logo">
-      <div class="auth-logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div class="auth-logo-text">
-        <h1>BOM Inspector</h1>
-        <p>JTEKT Column Systems Thailand</p>
-      </div>
-    </div>
-    <hr class="auth-divider">
-    <p class="auth-title">เข้าสู่ระบบ</p>
-    <p class="auth-sub">ระบบตรวจสอบวัสดุ COL ASSY-STRG</p>
-    <button class="btn-google" onclick="openGoogleModal()">
-      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-      ลงชื่อเข้าใช้ด้วย Google
-    </button>
-    <div class="auth-or">หรือ</div>
-    <div class="auth-input-group">
-      <label>ชื่อผู้ใช้ / Username</label>
-      <input type="text" class="auth-input" id="login-email" placeholder="username หรือ email">
-    </div>
-    <div class="auth-input-group">
-      <label>รหัสผ่าน</label>
-      <input type="password" class="auth-input" id="login-pwd" placeholder="••••••••">
-    </div>
-    <div class="auth-error" id="auth-error">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
-    <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
-    <div class="admin-hint">💡 ผู้ดูแลระบบ: username <strong>admin</strong> / password <strong>admin</strong></div>
-  </div>
+<div class="card">
+
+<h3>Scan Part</h3>
+
+<input id="scanInput" placeholder="Scan Barcode แล้วกด Enter">
+
 </div>
 
-<!-- GOOGLE MODAL -->
-<div class="google-modal" id="google-modal">
-  <div class="google-modal-card">
-    <div class="google-modal-header">
-      <svg width="52" height="52" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="white"/><path d="M43.6 20.1H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z" fill="#FFC107"/><path d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" fill="#FF3D00"/><path d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2A12 12 0 0 1 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z" fill="#4CAF50"/><path d="M43.6 20.1H42V20H24v8h11.3a12 12 0 0 1-4.1 5.6l6.2 5.2C36.9 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.9z" fill="#1976D2"/></svg>
-      <h3>เลือกบัญชี Google</h3>
-      <p>เพื่อเข้าสู่ระบบ BOM Inspector</p>
-    </div>
-    <div class="google-modal-body">
-      <div class="gmail-option" onclick="loginWithGoogle('Somchai Jaidee','somchai.j@jcsth.co.th','#1a56db')">
-        <div class="gmail-avatar" style="background:#1a56db">SJ</div>
-        <div><div style="font-size:14px;font-weight:600">Somchai Jaidee</div><div style="font-size:12px;color:#64748b">somchai.j@jcsth.co.th</div></div>
-      </div>
-      <div class="gmail-option" onclick="loginWithGoogle('Malee Wongsri','malee.w@jcsth.co.th','#7c3aed')">
-        <div class="gmail-avatar" style="background:#7c3aed">MW</div>
-        <div><div style="font-size:14px;font-weight:600">Malee Wongsri</div><div style="font-size:12px;color:#64748b">malee.w@jcsth.co.th</div></div>
-      </div>
-      <div class="gmail-option" onclick="loginWithGoogle('Prasit Thonglor','prasit.t@jcsth.co.th','#059669')">
-        <div class="gmail-avatar" style="background:#059669">PT</div>
-        <div><div style="font-size:14px;font-weight:600">Prasit Thonglor</div><div style="font-size:12px;color:#64748b">prasit.t@jcsth.co.th</div></div>
-      </div>
-      <button class="btn-cancel-google" onclick="closeGoogleModal()">ยกเลิก</button>
-    </div>
-  </div>
+<div class="card">
+
+<h3>BOM Status</h3>
+
+<table id="bomTable">
+
+<thead>
+<tr>
+<th>Part No</th>
+<th>Required</th>
+<th>Scanned</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
 </div>
-
-<!-- APP -->
-<div id="app-screen">
-  <div class="topbar" id="main-topbar">
-    <div class="topbar-left">
-      <div class="topbar-logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <div>
-        <div class="topbar-title">BOM Inspector</div>
-        <div class="topbar-sub">COL ASSY-STRG · 48810 482C2</div>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <span class="save-chip" id="save-chip">☁️ Auto Save</span>
-      <span class="admin-badge" id="admin-badge" style="display:none">⚙ ADMIN</span>
-      <button class="btn-nav" id="btn-user-view" onclick="switchView('user')" style="display:none">📋 ตรวจสอบวัสดุ</button>
-      <button class="btn-nav" id="btn-admin-view" onclick="switchView('admin')" style="display:none">⚙ จัดการวัสดุ</button>
-      <div class="user-chip">
-        <div class="user-avatar" id="topbar-avatar">--</div>
-        <span class="user-name" id="topbar-name">User</span>
-      </div>
-      <button class="btn-nav" onclick="doLogout()">ออกจากระบบ</button>
-    </div>
-  </div>
-
-  <!-- USER VIEW -->
-  <div id="user-view">
-    <div class="container">
-      <div class="page-header">
-        <h2>ตรวจเช็ควัสดุ — Bill of Material</h2>
-        <p>MODEL: 482D IMV · PART: JJ102-000932-B / 45250-0K180 · Rev.06 (23-May-25)</p>
-      </div>
-      <div class="stats-bar">
-        <div class="stat-card"><div class="stat-label">รายการทั้งหมด</div><div class="stat-value" id="stat-total">0</div></div>
-        <div class="stat-card"><div class="stat-label">ตรวจสอบแล้ว</div><div class="stat-value green" id="stat-checked">0</div></div>
-        <div class="stat-card"><div class="stat-label">ยังไม่ตรวจ</div><div class="stat-value amber" id="stat-unchecked">0</div></div>
-        <div class="stat-card"><div class="stat-label">ความคืบหน้า</div><div class="stat-value" id="stat-pct">0%</div></div>
-      </div>
-      <div class="toolbar">
-        <div class="search-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input class="search-input" id="search-box" placeholder="ค้นหาชื่อหรือหมายเลขวัสดุ..." oninput="filterItems()">
-        </div>
-        <select class="filter-select" id="filter-level" onchange="filterItems()">
-          <option value="">ทุกระดับ</option>
-          <option value="FG">FG</option>
-          <option value="*">* ระดับ 1</option>
-          <option value="**">** ระดับ 2</option>
-          <option value="***">*** ระดับ 3</option>
-          <option value="****">**** ระดับ 4</option>
-          <option value="*****">***** ระดับ 5</option>
-        </select>
-        <select class="filter-select" id="filter-status" onchange="filterItems()">
-          <option value="">ทุกสถานะ</option>
-          <option value="checked">ตรวจแล้ว ✓</option>
-          <option value="unchecked">ยังไม่ตรวจ</option>
-        </select>
-        <button class="btn-primary" onclick="exportXLS()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          ส่งออก XLS
-        </button>
-        <button class="btn-danger-soft" onclick="resetAll()">รีเซ็ต</button>
-      </div>
-      <div class="items-grid" id="items-grid"></div>
-    </div>
-  </div>
-
-  <!-- ADMIN VIEW -->
-  <div id="admin-screen">
-    <div class="container">
-      <div class="admin-banner">
-        <div class="admin-banner-icon">⚙</div>
-        <div>
-          <h2>Admin Panel — จัดการรายการวัสดุ</h2>
-          <p>เพิ่ม / แก้ไข / ลบ รายการวัสดุใน Bill of Material · เฉพาะผู้ดูแลระบบเท่านั้น</p>
-        </div>
-      </div>
-      <div class="admin-stats">
-        <div class="admin-stat"><div class="v" id="adm-total">0</div><div class="l">รายการวัสดุทั้งหมด</div></div>
-        <div class="admin-stat"><div class="v" id="adm-levels">0</div><div class="l">BOM Levels</div></div>
-        <div class="admin-stat"><div class="v" id="adm-sites">0</div><div class="l">Production Sites</div></div>
-      </div>
-      <div class="admin-toolbar">
-        <div class="search-wrap" style="max-width:300px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input class="search-input" id="admin-search" placeholder="ค้นหาวัสดุ..." oninput="renderAdminTable()">
-        </div>
-        <button class="btn-green" onclick="openEditModal(null)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          เพิ่มรายการใหม่
-        </button>
-        <button class="btn-primary" onclick="exportAdminXLS()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export Master BOM
-        </button>
-      </div>
-      <div class="admin-table-wrap">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th style="width:50px">No.</th>
-              <th style="width:80px">Level</th>
-              <th>Part Number</th>
-              <th>Part Name</th>
-              <th>Site</th>
-              <th>Material Spec</th>
-              <th style="width:50px;text-align:center">Std</th>
-              <th style="width:120px">จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="admin-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- EDIT MODAL -->
-<div class="modal-overlay" id="edit-modal">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3 id="modal-title">⚙ แก้ไขรายการวัสดุ</h3>
-      <button class="modal-close" onclick="closeEditModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="edit-orig-no">
-      <div class="form-row">
-        <div class="form-group">
-          <label>No. <span class="req">*</span></label>
-          <input type="number" class="form-input" id="edit-no-val" min="1">
-        </div>
-        <div class="form-group">
-          <label>Level <span class="req">*</span></label>
-          <select class="form-select" id="edit-level">
-            <option value="FG">FG — Finished Goods</option>
-            <option value="*">* — ระดับ 1</option>
-            <option value="**">** — ระดับ 2</option>
-            <option value="***">*** — ระดับ 3</option>
-            <option value="****">**** — ระดับ 4</option>
-            <option value="*****">***** — ระดับ 5</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row full">
-        <div class="form-group">
-          <label>Part Number <span class="req">*</span></label>
-          <input type="text" class="form-input" id="edit-part" placeholder="เช่น 48810 482C2">
-        </div>
-      </div>
-      <div class="form-row full">
-        <div class="form-group">
-          <label>Part Name <span class="req">*</span></label>
-          <input type="text" class="form-input" id="edit-name" placeholder="ชื่อวัสดุภาษาอังกฤษ">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Production Site</label>
-          <input type="text" class="form-input" id="edit-site" placeholder="เช่น JCSTH">
-        </div>
-        <div class="form-group">
-          <label>Std Qty (pcs) <span class="req">*</span></label>
-          <input type="number" class="form-input" id="edit-std" min="1" value="1">
-        </div>
-      </div>
-      <div class="form-row full">
-        <div class="form-group">
-          <label>Material Spec</label>
-          <textarea class="form-textarea" id="edit-spec" placeholder="เช่น STKM15A, φ32.0"></textarea>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel-modal" onclick="closeEditModal()">ยกเลิก</button>
-      <button class="btn-save" onclick="saveItem()">💾 บันทึกการเปลี่ยนแปลง</button>
-    </div>
-  </div>
-</div>
-
-<div id="offline-bar">⚠️ ไม่มีการเชื่อมต่ออินเทอร์เน็ต — ข้อมูลที่บันทึกไว้จะยังใช้งานได้</div>
-
-<div id="mobile-nav">
-  <button class="mnav-btn on" id="mnav-check" onclick="mnavGo('check')">
-    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    ตรวจสอบ
-    <span class="mnav-pip" id="mnav-pip"></span>
-  </button>
-  <button class="mnav-btn" id="mnav-admin" onclick="mnavGo('admin')">
-    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-    จัดการ BOM
-  </button>
-  <button class="mnav-btn" onclick="doLogout()">
-    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-    ออกจากระบบ
-  </button>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-/* ── STORAGE KEYS ── */
-const SK_BOM      = 'bom:master';
-const SK_CHECKED  = 'bom:checked';
-const SK_QTY      = 'bom:quantities';
 
-/* ── DEFAULT BOM DATA ── */
-const DEFAULT_BOM = [
-  {no:1,level:"FG",part:"48810 482C2",name:"COL ASSY-STRG",site:"JCSTH",spec:"ASSY",std:1},
-  {no:2,level:"*",part:"08918 60610",name:"NUT-SELF LOCK, FLG HEX TYPE S",site:"JCS",spec:"SWRCH10A",std:1},
-  {no:3,level:"*",part:"48820 482C0",name:"SHAFT ASSY-STRG COL",site:"JCSTH",spec:"ASSY",std:1},
-  {no:4,level:"**",part:"48823 482A0",name:"SHAFT-STRG COL, UPR",site:"JCSTH",spec:"STKM15A, φ32.0, t=3.2±0.1",std:1},
-  {no:5,level:"***",part:"48823 482A0T",name:"SHAFT-STRG COL, UPR",site:"Sankin",spec:"STKM15A, φ32.0, t=3.2±0.1",std:1},
-  {no:6,level:"**",part:"48833 482A0",name:"SHAFT-STRG COL, IMD",site:"JCSTH",spec:"ASSY",std:1},
-  {no:7,level:"***",part:"48834 482A0 / 48833 482A0-RM",name:"SHAFT-STRG COL, IMD",site:"MFC",spec:"STKM15A, φ27.5×φ19",std:1},
-  {no:8,level:"*",part:"48861 482C1",name:"TUBE ASSY-STRG COL, UPR1",site:"JCSTH",spec:"ASSY",std:1},
-  {no:9,level:"**",part:"48092 164G0",name:"DAMPER",site:"JCSXM",spec:"Elastollan 1164D",std:1},
-  {no:10,level:"**",part:"48862 482C1 / 48862 482C0",name:"TUBE ASSY-STRG COL, UPR2",site:"JCSTH",spec:"ASSY",std:1},
-  {no:11,level:"***",part:"48863 482C1 / 48863 482C0",name:"TUBE-JACKET, UPR",site:"JCSTH",spec:"ASSY",std:1},
-  {no:12,level:"****",part:"48863 482BA / 48863 482AA",name:"TUBE-JACKET, UPR (EDM Coating)",site:"Okitsumo",spec:"STKM12B-E, φ45, t=2.3±0.115",std:1},
-  {no:13,level:"*****",part:"48863 482BAT",name:"TUBE-JACKET, UPR (Supply to Okitsumo)",site:"Sankin",spec:"JIS G3445 STKM12B-E, Ø45±0.05",std:1},
-  {no:14,level:"***",part:"48868 482A0",name:"BRKT-COL COVER",site:"Shibata",spec:"SPHC, t2.0±0.1",std:1},
-  {no:15,level:"***",part:"48981 482A0",name:"PLATE-LOCK",site:"TMI",spec:"SPFH590, t2.0±0.1",std:1},
-  {no:16,level:"**",part:"48915 482B0",name:"BRG-STRG COL, UPR",site:"JPC",spec:"ASSY",std:1},
-  {no:17,level:"*",part:"48864 482A0",name:"TUBE ASSY-STRG COL, LWR",site:"JCSTH",spec:"ASSY",std:1},
-  {no:18,level:"**",part:"48865 482A0",name:"TUBE-STRG COL, LWR",site:"SHINEI",spec:"ADC12",std:1},
-  {no:19,level:"**",part:"48915 482A0",name:"BRG-STRG COL, LWR",site:"JPC",spec:"ASSY",std:1},
-  {no:20,level:"**",part:"48933 482C0",name:"RING-SNAP HOLE C TYPE",site:"Siam Chuyo",spec:"65Mn",std:1},
-  {no:21,level:"**",part:"48958 482A0",name:"COLLAR-STRG COL BRKT",site:"NIFCO",spec:"POM",std:2},
-  {no:22,level:"**",part:"48959 482A0",name:"SPACER-STRG COL BRKT",site:"SANKIN",spec:"GB20",std:1},
-  {no:23,level:"*",part:"48867 830A1",name:"GROMMET-SCREW",site:"NIFCO",spec:"POM",std:1},
-  {no:24,level:"*",part:"48933 482A0",name:"RING-SNAP C TYPE",site:"Siam Chuyo",spec:"SWRH72B",std:1},
-  {no:25,level:"*",part:"48933 482B0",name:"RING-SNAP, C TYPE 1",site:"Topy",spec:"65Mn",std:1},
-  {no:26,level:"*",part:"48958 164A0",name:"COLLAR",site:"JCS",spec:"SWCH15A",std:1},
-  {no:27,level:"*",part:"48960 482A1",name:"CLP ASSY-MTG, STRG COL",site:"JCSTH",spec:"ASSY",std:1},
-  {no:28,level:"**",part:"48963 482A0",name:"BRKT-MTG, STRG COL",site:"SSI",spec:"SPHC, t3.2±0.23",std:1},
-  {no:29,level:"**",part:"48965 482A0",name:"BRKT-ADJ, STRG COL",site:"SSI",spec:"SPHC, t3.2±0.23",std:1},
-  {no:30,level:"*",part:"4896A 164A0",name:"SHEAR PIN",site:"JCS",spec:"POLYACETAL RESIN",std:1},
-  {no:31,level:"*",part:"48970 482A0",name:"LEVER ASSY-ADJ, STRG COL",site:"JCSTH",spec:"ASSY",std:1},
-  {no:32,level:"**",part:"48966 482A0",name:"BOLT-ADJ, LEVER",site:"Osakarashi",spec:"10B22M",std:1},
-  {no:33,level:"**",part:"4897F 482A0",name:"LEVER AND KNOB ASSY",site:"Seiwa / BVP",spec:"ASSY",std:1},
-  {no:34,level:"**",part:"48992 164L0",name:"CAM-LEVER, STRG",site:"TFS",spec:"SMF4030 EQUIV.",std:1},
-  {no:35,level:"*",part:"48972 830D0",name:"BRG-THRUST NEEDLE",site:"JTC",spec:"ASSY",std:1},
-  {no:36,level:"*",part:"48974 164L0",name:"PAWL-TELESCO, STRG",site:"OILES",spec:"POLY YAMIDE RESIN",std:1},
-  {no:37,level:"*",part:"48980 482A0",name:"SPRING ASSY-TILT",site:"NSP",spec:"ASSY",std:1},
-  {no:38,level:"*",part:"48982 482A0 / 48982 482A0-BOI7",name:"HOOK ASSY, TELESCOPIC LOCK",site:"JCSTH",spec:"ASSY",std:1},
-  {no:39,level:"**",part:"48978 164L1",name:"PAWL",site:"TFS",spec:"SMF4030 EQUIV.",std:1},
-  {no:40,level:"**",part:"48984 164L0",name:"SPRING-PAWL",site:"NSP",spec:"SWP-B, φ1.2",std:1},
-  {no:41,level:"*",part:"48988 482A0",name:"PLATE-FRICTION, TILT",site:"Advanex",spec:"SUS430, t1.2±0.08",std:1},
-  {no:42,level:"*",part:"48989 164G0",name:"WASHER-FRICTION, TILT",site:"JCSXM",spec:"SUS430, t0.4±0.06",std:1},
-  {no:43,level:"*",part:"48990 482A0",name:"BLOCK ASSY, STOPPER",site:"JCSTH",spec:"ASSY",std:1},
-  {no:44,level:"**",part:"48098 164L1",name:"CLIP-BLOCK",site:"PLASESS",spec:"POM",std:1},
-  {no:45,level:"**",part:"48907 164L1",name:"BLOCK-STOPPER",site:"TFS",spec:"SMF4030 EQUIV.",std:1},
-  {no:46,level:"**",part:"48999 482A0",name:"PLATE-GUIDE",site:"NSP",spec:"SUS304-CSP-1/2H, t0.3",std:1},
-  {no:47,level:"*",part:"48991 164L0",name:"CAM-SLIDE",site:"TFS",spec:"SMF4030 EQUIV.",std:1}
-];
+let bom = {}
 
-const ICONS={NUT:`<path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 6a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/>`,SHAFT:`<rect x="4" y="10" width="16" height="4" rx="2"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/>`,TUBE:`<path d="M4 8h16v8H4z"/><line x1="8" y1="8" x2="8" y2="16"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="16" y1="8" x2="16" y2="16"/>`,BRKT:`<rect x="3" y="5" width="8" height="14" rx="1"/><rect x="13" y="9" width="8" height="6" rx="1"/><line x1="11" y1="12" x2="13" y2="12"/>`,RING:`<circle cx="12" cy="12" r="8" fill="none" stroke-width="3"/><circle cx="12" cy="12" r="3" fill="none" stroke-width="1.5"/>`,SPRING:`<path d="M5 8Q8 5 11 8Q14 11 17 8Q20 5 21 8" fill="none" stroke-width="2"/><path d="M5 12Q8 9 11 12Q14 15 17 12Q20 9 21 12" fill="none" stroke-width="2"/><path d="M5 16Q8 13 11 16Q14 19 17 16" fill="none" stroke-width="2"/>`,DEFAULT:`<rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke-width="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>`};
-const LVL_COLORS={FG:"#1a3a5c","*":"#2563a8","**":"#0369a1","***":"#0891b2","****":"#059669","*****":"#7c3aed"};
+document.getElementById("bomFile").addEventListener("change", function(e){
 
-let BOM=[], currentUser=null, isAdmin=false;
-let quantities={}, checkedItems={}, editingNo=null;
+let reader = new FileReader()
 
-function icon(name){const n=name.toUpperCase();for(const k of Object.keys(ICONS)){if(k!=='DEFAULT'&&n.includes(k))return ICONS[k];}return ICONS.DEFAULT;}
+reader.onload = function(e){
 
-/* ── STORAGE HELPERS ── */
-async function storageSave(){
-  try{
-    await window.storage.set(SK_BOM, JSON.stringify(BOM));
-    await window.storage.set(SK_CHECKED, JSON.stringify(checkedItems));
-    await window.storage.set(SK_QTY, JSON.stringify(quantities));
-    const chip=document.getElementById('save-chip');
-    chip.textContent='✅ บันทึกแล้ว';chip.classList.add('saved');
-    clearTimeout(chip._t);
-    chip._t=setTimeout(()=>{chip.textContent='☁️ Auto Save';chip.classList.remove('saved');},2200);
-  }catch(e){console.warn('save error',e);}
+let data = new Uint8Array(e.target.result)
+let workbook = XLSX.read(data, {type:'array'})
+let sheet = workbook.Sheets[workbook.SheetNames[0]]
+
+let json = XLSX.utils.sheet_to_json(sheet)
+
+json.forEach(r=>{
+bom[r.PartNo] = {
+qty:r.Qty,
+scan:0
+}
+})
+
+render()
+
 }
 
-async function storageLoad(){
-  try{
-    const b=await window.storage.get(SK_BOM);
-    BOM=b?JSON.parse(b.value):[...DEFAULT_BOM];
-  }catch{BOM=[...DEFAULT_BOM];}
-  try{
-    const c=await window.storage.get(SK_CHECKED);
-    checkedItems=c?JSON.parse(c.value):{};
-  }catch{checkedItems={};}
-  try{
-    const q=await window.storage.get(SK_QTY);
-    quantities=q?JSON.parse(q.value):{};
-  }catch{quantities={};}
+reader.readAsArrayBuffer(e.target.files[0])
+
+})
+
+document.getElementById("scanInput").addEventListener("keypress", function(e){
+
+if(e.key==="Enter"){
+
+let code=this.value.trim()
+
+if(bom[code]){
+
+bom[code].scan++
+
+}else{
+
+alert("Unknown Part : "+code)
+
 }
 
-/* ── INIT ── */
-window.addEventListener('DOMContentLoaded', async ()=>{
-  await storageLoad();
-  document.getElementById('loading-overlay').classList.add('hidden');
-  document.getElementById('auth-screen').style.display='flex';
-  updateOnline();
-});
+this.value=""
 
-/* ── OFFLINE ── */
-function updateOnline(){
-  document.getElementById('offline-bar').classList.toggle('show',!navigator.onLine);
-}
-window.addEventListener('online',updateOnline);
-window.addEventListener('offline',updateOnline);
+render()
 
-/* ── AUTH ── */
-function openGoogleModal(){document.getElementById('google-modal').classList.add('show');}
-function closeGoogleModal(){document.getElementById('google-modal').classList.remove('show');}
-function loginWithGoogle(name,email,color){closeGoogleModal();startSession(name,email,color,false);}
-
-function doLogin(){
-  const u=document.getElementById('login-email').value.trim();
-  const p=document.getElementById('login-pwd').value;
-  const err=document.getElementById('auth-error');
-  if(!u||!p){err.style.display='block';return;}
-  if(u.toLowerCase()==='admin'&&p==='admin'){startSession('Administrator','admin','#7c2d12',true);return;}
-  if(u.length<2){err.style.display='block';return;}
-  const displayName=u.includes('@')?u.split('@')[0]:u;
-  startSession(displayName,u.includes('@')?u:u+'@user.local','#1a3a5c',false);
 }
 
-function startSession(name,email,color,adminFlag){
-  currentUser={name,email,color};isAdmin=adminFlag;
-  const init=name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-  const av=document.getElementById('topbar-avatar');
-  av.textContent=init;av.style.background=adminFlag?'#fbbf24':color;av.style.color=adminFlag?'#7c2d12':'white';
-  document.getElementById('topbar-name').textContent=adminFlag?'Administrator':name;
-  document.getElementById('main-topbar').className=adminFlag?'topbar admin-mode':'topbar';
-  document.getElementById('admin-badge').style.display=adminFlag?'inline':'none';
-  document.getElementById('btn-user-view').style.display=adminFlag?'inline-flex':'none';
-  document.getElementById('btn-admin-view').style.display=adminFlag?'inline-flex':'none';
-  document.getElementById('auth-screen').style.display='none';
-  document.getElementById('app-screen').style.display='block';
-  document.getElementById('mobile-nav').classList.add('active');
-  switchView(adminFlag?'admin':'user');
-  updateMnavPip();
-  showToast(adminFlag?'⚙ เข้าสู่ระบบ Admin เรียบร้อย':'ยินดีต้อนรับ '+name+' 👋',adminFlag?'admin':'normal');
+})
+
+function render(){
+
+let tbody=document.querySelector("#bomTable tbody")
+tbody.innerHTML=""
+
+for(let part in bom){
+
+let row=bom[part]
+
+let status = row.scan>=row.qty ? "OK":"Missing"
+
+let tr=document.createElement("tr")
+
+tr.innerHTML=`
+<td>${part}</td>
+<td>${row.qty}</td>
+<td>${row.scan}</td>
+<td class="${status==="OK"?"ok":"missing"}">${status}</td>
+`
+
+tbody.appendChild(tr)
+
 }
 
-function doLogout(){
-  currentUser=null;isAdmin=false;
-  document.getElementById('app-screen').style.display='none';
-  document.getElementById('auth-screen').style.display='flex';
-  document.getElementById('mobile-nav').classList.remove('active');
-  document.getElementById('login-email').value='';
-  document.getElementById('login-pwd').value='';
-  document.getElementById('auth-error').style.display='none';
 }
 
-/* ── VIEWS ── */
-function switchView(v){
-  document.getElementById('user-view').style.display=v==='user'?'block':'none';
-  document.getElementById('admin-screen').style.display=v==='admin'?'block':'none';
-  document.getElementById('btn-user-view')?.classList.toggle('active',v==='user');
-  document.getElementById('btn-admin-view')?.classList.toggle('active',v==='admin');
-  if(v==='user'){filterItems();updateStats();}else{renderAdminTable();}
-}
-
-function mnavGo(page){
-  document.querySelectorAll('.mnav-btn').forEach(b=>b.classList.remove('on'));
-  if(page==='check'){document.getElementById('mnav-check').classList.add('on');switchView('user');}
-  else if(page==='admin'){document.getElementById('mnav-admin').classList.add('on');switchView('admin');}
-}
-
-function updateMnavPip(){
-  const chk=Object.values(checkedItems).filter(Boolean).length;
-  document.getElementById('mnav-pip')?.classList.toggle('show',chk>0);
-}
-
-/* ── USER VIEW ── */
-function filterItems(){
-  const q=(document.getElementById('search-box').value||'').toLowerCase();
-  const lvl=document.getElementById('filter-level').value;
-  const st=document.getElementById('filter-status').value;
-  const grid=document.getElementById('items-grid');
-  const filtered=BOM.filter(i=>{
-    const mq=!q||i.part.toLowerCase().includes(q)||i.name.toLowerCase().includes(q);
-    const ml=!lvl||i.level===lvl;
-    const ic=!!checkedItems[i.no];
-    const ms=!st||(st==='checked'&&ic)||(st==='unchecked'&&!ic);
-    return mq&&ml&&ms;
-  });
-  if(!filtered.length){
-    grid.innerHTML=`<div class="no-results"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:#dde3ea;display:block;margin:0 auto 12px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>ไม่พบรายการที่ค้นหา</div>`;
-    return;
-  }
-  grid.innerHTML=filtered.map(item=>{
-    const qty=quantities[item.no]!==undefined?quantities[item.no]:item.std;
-    const ck=!!checkedItems[item.no];
-    const lc=LVL_COLORS[item.level]||'#64748b';
-    const editBtn=isAdmin?`<button class="admin-edit-btn" onclick="openEditModal(${item.no})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>แก้ไข</button>`:'';
-    return `<div class="item-card" id="card-${item.no}">
-      <div class="item-card-img">
-        <svg class="part-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">${icon(item.name)}</svg>
-        <div class="item-level-badge" style="background:${lc}">${item.level}</div>
-        <div class="item-no-badge">#${item.no}</div>${editBtn}
-      </div>
-      <div class="item-card-body">
-        <div class="item-part-num">${item.part}</div>
-        <div class="item-name">${item.name}</div>
-        <div class="item-meta">
-          <span class="meta-chip site">🏭 ${item.site}</span>
-          <span class="meta-chip spec" title="${item.spec}">⚙ ${item.spec}</span>
-        </div>
-        <div class="item-qty-row">
-          <div class="qty-label">จำนวนตรวจ<br><span class="qty-std">มาตรฐาน: ${item.std} pcs</span></div>
-          <div class="qty-ctrl">
-            <button class="qty-btn" onclick="changeQty(${item.no},-1)">−</button>
-            <input class="qty-input" type="number" min="0" value="${qty}" onchange="setQty(${item.no},this.value)" id="qty-${item.no}">
-            <button class="qty-btn" onclick="changeQty(${item.no},1)">+</button>
-          </div>
-          <button class="check-btn ${ck?'checked':''}" onclick="toggleCheck(${item.no})">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function changeQty(no,d){
-  const inp=document.getElementById('qty-'+no);if(!inp)return;
-  let v=(quantities[no]!==undefined?quantities[no]:BOM.find(i=>i.no===no).std)+d;
-  if(v<0)v=0;quantities[no]=v;inp.value=v;
-  storageSave();
-}
-function setQty(no,val){
-  let v=parseInt(val);if(isNaN(v)||v<0)v=0;
-  quantities[no]=v;
-  storageSave();
-}
-function toggleCheck(no){
-  checkedItems[no]=!checkedItems[no];
-  document.querySelector(`#card-${no} .check-btn`)?.classList.toggle('checked',checkedItems[no]);
-  updateStats();updateMnavPip();
-  storageSave();
-  showToast(checkedItems[no]?`✓ ตรวจสอบรายการ #${no} แล้ว`:`↩ ยกเลิกการตรวจสอบ #${no}`,'normal');
-}
-function updateStats(){
-  const total=BOM.length,checked=BOM.filter(i=>checkedItems[i.no]).length;
-  document.getElementById('stat-total').textContent=total;
-  document.getElementById('stat-checked').textContent=checked;
-  document.getElementById('stat-unchecked').textContent=total-checked;
-  document.getElementById('stat-pct').textContent=Math.round(checked/total*100)+'%';
-}
-function resetAll(){
-  if(!confirm('รีเซ็ตจำนวนและสถานะทั้งหมดหรือไม่?'))return;
-  quantities={};checkedItems={};
-  storageSave();
-  filterItems();updateStats();
-  showToast('รีเซ็ตทั้งหมดแล้ว','normal');
-}
-function exportXLS(){
-  const wb=XLSX.utils.book_new(),now=new Date();
-  const ws=XLSX.utils.aoa_to_sheet([
-    ['รายงานตรวจเช็ควัสดุ — BOM Inspector'],
-    ['ผู้ตรวจ: '+(currentUser?.name||'-')],
-    ['วันที่: '+now.toLocaleDateString('th-TH')+'  เวลา: '+now.toLocaleTimeString('th-TH')],
-    [],
-    ['No.','Level','Part Number','Part Name','Production Site','Material Spec','Std (pcs)','จำนวนตรวจ','สถานะ'],
-    ...BOM.map(i=>[i.no,i.level,i.part,i.name,i.site,i.spec,i.std,quantities[i.no]??i.std,checkedItems[i.no]?'ตรวจแล้ว ✓':'ยังไม่ตรวจ'])
-  ]);
-  ws['!cols']=[5,8,28,35,18,30,8,10,12].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws,'BOM Check');
-  XLSX.writeFile(wb,`BOM_Check_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`);
-  showToast('📥 ส่งออกไฟล์ XLS เรียบร้อย','normal');
-}
-
-/* ── ADMIN TABLE ── */
-function renderAdminTable(){
-  const q=(document.getElementById('admin-search')?.value||'').toLowerCase();
-  const filtered=BOM.filter(i=>!q||i.part.toLowerCase().includes(q)||i.name.toLowerCase().includes(q)||i.site.toLowerCase().includes(q));
-  document.getElementById('admin-tbody').innerHTML=filtered.map(item=>{
-    const lc=LVL_COLORS[item.level]||'#64748b';
-    return `<tr>
-      <td style="font-weight:700;color:#94a3b8">${item.no}</td>
-      <td><span class="level-pill" style="background:${lc}">${item.level}</span></td>
-      <td class="tbl-part">${item.part}</td>
-      <td style="font-weight:500;max-width:220px">${item.name}</td>
-      <td><span class="meta-chip site" style="white-space:nowrap">🏭 ${item.site}</span></td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#64748b" title="${item.spec}">${item.spec}</td>
-      <td style="text-align:center;font-weight:600">${item.std}</td>
-      <td style="white-space:nowrap">
-        <button class="btn-edit-row" onclick="openEditModal(${item.no})">✏ แก้ไข</button>
-        <button class="btn-del-row" onclick="deleteItem(${item.no})">🗑</button>
-      </td>
-    </tr>`;
-  }).join('');
-  document.getElementById('adm-total').textContent=BOM.length;
-  document.getElementById('adm-levels').textContent=new Set(BOM.map(i=>i.level)).size;
-  document.getElementById('adm-sites').textContent=new Set(BOM.map(i=>i.site)).size;
-}
-
-/* ── EDIT MODAL ── */
-function openEditModal(no){
-  editingNo=no;
-  if(no===null){
-    document.getElementById('modal-title').textContent='⚙ เพิ่มรายการวัสดุใหม่';
-    document.getElementById('edit-orig-no').value='';
-    document.getElementById('edit-no-val').value=BOM.length?Math.max(...BOM.map(i=>i.no))+1:1;
-    document.getElementById('edit-level').value='*';
-    ['edit-part','edit-name','edit-site','edit-spec'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('edit-std').value='1';
-  }else{
-    const item=BOM.find(i=>i.no===no);if(!item)return;
-    document.getElementById('modal-title').textContent=`⚙ แก้ไขรายการ #${no} — ${item.name}`;
-    document.getElementById('edit-orig-no').value=no;
-    document.getElementById('edit-no-val').value=item.no;
-    document.getElementById('edit-level').value=item.level;
-    document.getElementById('edit-part').value=item.part;
-    document.getElementById('edit-name').value=item.name;
-    document.getElementById('edit-site').value=item.site;
-    document.getElementById('edit-std').value=item.std;
-    document.getElementById('edit-spec').value=item.spec;
-  }
-  document.getElementById('edit-modal').classList.add('show');
-  setTimeout(()=>document.getElementById('edit-name').focus(),100);
-}
-function closeEditModal(){document.getElementById('edit-modal').classList.remove('show');}
-
-function saveItem(){
-  const noVal=parseInt(document.getElementById('edit-no-val').value);
-  const level=document.getElementById('edit-level').value;
-  const part=document.getElementById('edit-part').value.trim();
-  const name=document.getElementById('edit-name').value.trim();
-  const site=document.getElementById('edit-site').value.trim();
-  const std=Math.max(1,parseInt(document.getElementById('edit-std').value)||1);
-  const spec=document.getElementById('edit-spec').value.trim();
-  if(!part||!name){alert('⚠ กรุณากรอก Part Number และ Part Name');return;}
-  if(editingNo===null){
-    const newNo=noVal||(BOM.length?Math.max(...BOM.map(i=>i.no))+1:1);
-    BOM.push({no:newNo,level,part,name,site,spec,std});
-    BOM.sort((a,b)=>a.no-b.no);
-    showToast(`✅ เพิ่มรายการ "${name}" เรียบร้อย`,'admin');
-  }else{
-    const idx=BOM.findIndex(i=>i.no===editingNo);
-    if(idx<0)return;
-    BOM[idx]={no:noVal||editingNo,level,part,name,site,spec,std};
-    BOM.sort((a,b)=>a.no-b.no);
-    showToast(`✅ อัปเดต "${name}" เรียบร้อย`,'admin');
-  }
-  storageSave();
-  closeEditModal();
-  renderAdminTable();
-  filterItems();updateStats();
-}
-
-function deleteItem(no){
-  const item=BOM.find(i=>i.no===no);if(!item)return;
-  if(!confirm(`🗑 ลบรายการ #${no}\n"${item.name}"\n\nยืนยันการลบ?`))return;
-  BOM=BOM.filter(i=>i.no!==no);
-  delete quantities[no];delete checkedItems[no];
-  storageSave();
-  renderAdminTable();filterItems();updateStats();
-  showToast(`🗑 ลบ "${item.name}" แล้ว`,'admin');
-}
-
-function exportAdminXLS(){
-  const wb=XLSX.utils.book_new(),now=new Date();
-  const ws=XLSX.utils.aoa_to_sheet([
-    ['Master BOM — COL ASSY-STRG 48810 482C2'],
-    ['Export by Admin — '+now.toLocaleDateString('th-TH')],
-    [],
-    ['No.','Level','Part Number','Part Name','Production Site','Material Spec','Std Qty (pcs)'],
-    ...BOM.map(i=>[i.no,i.level,i.part,i.name,i.site,i.spec,i.std])
-  ]);
-  ws['!cols']=[5,8,30,38,20,35,10].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws,'Master BOM');
-  XLSX.writeFile(wb,`Master_BOM_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`);
-  showToast('📥 Export Master BOM เรียบร้อย','admin');
-}
-
-function showToast(msg,type='normal'){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast '+type+' show';
-  clearTimeout(t._timer);
-  t._timer=setTimeout(()=>t.classList.remove('show'),3200);
-}
-
-document.getElementById('login-pwd').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-document.getElementById('edit-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeEditModal();});
 </script>
+
 </body>
 </html>
